@@ -1,77 +1,17 @@
-import { Injectable, NotFoundException, OnApplicationBootstrap, RequestMethod } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeepPartial, FindOptionsRelations, FindOptionsWhere } from 'typeorm';
-import { Permission } from 'src/entities/permission.entity';
 import { PaginationModel } from 'src/common/models/pagination-model';
 import { paginate } from 'nestjs-typeorm-paginate';
-import { DiscoveryService, Reflector } from '@nestjs/core';
-import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
+import { Permission } from 'src/entities/permission.entity';
 
 @Injectable()
-export class PermissionsService implements OnApplicationBootstrap {
-
-    private readonly publicPaths = [
-        '/api/auth/login',
-        '/api/auth/signup',
-        '/api/auth/profile',
-    ]
-
-    private readonly methodMap: Record<number, string> = {
-        [RequestMethod.GET]: 'GET',
-        [RequestMethod.POST]: 'POST',
-        [RequestMethod.PUT]: 'PUT',
-        [RequestMethod.DELETE]: 'DELETE',
-        [RequestMethod.PATCH]: 'PATCH',
-        [RequestMethod.OPTIONS]: 'OPTIONS',
-        [RequestMethod.HEAD]: 'HEAD',
-        [RequestMethod.ALL]: 'ALL',
-    };
-
+export class PermissionsService {
 
     constructor(
         @InjectRepository(Permission)
         private readonly permissionRepo: Repository<Permission>,
-        private readonly discoveryService: DiscoveryService,
-        private readonly reflector: Reflector,
     ) { }
-
-    async onApplicationBootstrap() {
-        const controllers = this.discoveryService.getControllers();
-        const permissions: DeepPartial<Permission>[] = [];
-
-        controllers.forEach(wrapper => {
-            const { instance } = wrapper;
-            if (!instance) return;
-
-            const prototype = Object.getPrototypeOf(instance);
-            const controllerPath = this.reflector.get<string>(PATH_METADATA, instance.constructor) || '';
-
-            Object.getOwnPropertyNames(prototype)
-                .filter(m => typeof instance[m] === 'function' && m !== 'constructor')
-                .forEach(methodName => {
-                    const handler = prototype[methodName];
-                    const routePath = this.reflector.get<string>(PATH_METADATA, handler);
-                    const requestMethodNum = this.reflector.get<number>(METHOD_METADATA, handler);
-
-                    if (routePath && requestMethodNum !== undefined) {
-                        let fullPath = `${controllerPath}/${routePath}`.replace(/\/+/g, '/');
-
-                        if (fullPath.endsWith('/') && !fullPath.includes(':')) {
-                            fullPath = fullPath.slice(0, -1);
-                        }
-
-                        if (fullPath.trim() === '' || this.publicPaths.includes(fullPath)) return;
-
-                        permissions.push({
-                            path: fullPath,
-                            method: this.methodMap[requestMethodNum]
-                        });
-                    }
-                });
-        });
-
-        await this.save(permissions);
-    }
 
     async save(dtos: DeepPartial<Permission>[]): Promise<Permission[]> {
         if (!dtos.length) return [];
@@ -81,7 +21,7 @@ export class PermissionsService implements OnApplicationBootstrap {
         });
 
         const toCreate = dtos.filter(
-            dto => !existing.some(e => e.path === dto.path && e.method === dto.method)
+            dto => !existing.some(item => item.path === dto.path && item.method === dto.method),
         );
 
         if (!toCreate.length) return existing;
@@ -96,13 +36,29 @@ export class PermissionsService implements OnApplicationBootstrap {
         return this.permissionRepo.save(permission);
     }
 
-    async findOneBy({ filters, relations }: { filters: FindOptionsWhere<Permission>; relations?: FindOptionsRelations<Permission> }): Promise<Permission> {
-        const user = await this.permissionRepo.findOne({ where: filters, relations });
-        if (!user) throw new NotFoundException('Permission not found');
-        return user;
+    async findOneBy({
+        filters,
+        relations,
+    }: {
+        filters: FindOptionsWhere<Permission> | FindOptionsWhere<Permission>[];
+        relations?: FindOptionsRelations<Permission>;
+    }): Promise<Permission> {
+        const permission = await this.permissionRepo.findOne({ where: filters, relations });
+        if (!permission) throw new NotFoundException('Permission not found');
+        return permission;
     }
 
-    async findBy({ filters, relations, page, size }: { filters: FindOptionsWhere<Permission>; relations?: FindOptionsRelations<Permission>; page: number; size: number }): Promise<PaginationModel<Permission>> {
+    async findBy({
+        filters,
+        relations,
+        page,
+        size,
+    }: {
+        filters: FindOptionsWhere<Permission> | FindOptionsWhere<Permission>[];
+        relations?: FindOptionsRelations<Permission>;
+        page: number;
+        size: number;
+    }): Promise<PaginationModel<Permission>> {
         const result = await paginate<Permission>(
             this.permissionRepo,
             { page, limit: size },

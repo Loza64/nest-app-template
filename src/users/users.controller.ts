@@ -13,38 +13,55 @@ import { UsersService } from './users.service';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create.dto';
 import { UpdateUserDto } from './dto/update.dto';
-import { PaginationModel } from 'src/common/models/pagination-model';
-import { parsePopulate } from 'src/common/parse/populate.parse';
-import filtersParse from 'src/common/parse/filters.parse';
+import { FindOptionsWhere } from 'typeorm';
+import { ILike } from 'typeorm';
+import { FindUsersQueryDto } from './dto/findUsersQueryDto.dto';
 
 @Controller('api/users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Get()
-    async findBy(@Query() query: Record<string, string>): Promise<PaginationModel<User>> {
-        const { page = '1', size = '50' } = query;
+    async findAll(@Query() query: FindUsersQueryDto) {
+        const { page = 1, size = 20, search, blocked, role } = query;
 
-        const pageNumber = parseInt(page, 10);
-        const pageSize = parseInt(size, 10);
+        let filters: FindOptionsWhere<User> | FindOptionsWhere<User>[];
 
-        const relations = parsePopulate<User>(query)
-        const filters = filtersParse<User>({ query })
+        if (search) {
+            filters = [
+                { name: ILike(`%${search}%`) },
+                { email: ILike(`%${search}%`) },
+                { username: ILike(`%${search}%`) },
+            ];
+            filters = filters.map(f => ({
+                ...f,
+                ...(blocked !== undefined ? { blocked } : {}),
+                ...(role ? { role: { id: role } } : {}),
+            }));
+        } else {
+            filters = {
+                ...(blocked !== undefined ? { blocked } : {}),
+                ...(role ? { role: { id: role } } : {}),
+            };
+        }
 
         return this.usersService.findBy({
             filters,
-            relations,
-            page: pageNumber,
-            size: pageSize,
+            relations: { role: true },
+            page,
+            size,
         });
     }
 
+
+
     @Get(':id')
-    async findOne(@Param('id', ParseIntPipe) id: number, @Query() query: Record<string, string>): Promise<User> {
-        const relations = parsePopulate<User>(query)
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
         return this.usersService.findOneBy({
             filters: { id },
-            relations,
+            relations: {
+                role: true
+            },
         });
     }
 

@@ -51,13 +51,13 @@ export class UsersService implements ICrudService<User> {
         await this.userRepo.remove(user);
     }
 
-    async findOneBy({ filters, relations }: { filters: FindOptionsWhere<User>; relations?: FindOptionsRelations<User> }): Promise<User> {
+    async findOneBy({ filters, relations }: { filters: FindOptionsWhere<User> | FindOptionsWhere<User>[]; relations?: FindOptionsRelations<User> }): Promise<User> {
         const user = await this.userRepo.findOne({ where: filters, relations });
         if (!user) throw new NotFoundException('User not found');
         return user;
     }
 
-    async findBy({ filters, relations, page, size }: { filters: FindOptionsWhere<User>; relations?: FindOptionsRelations<User>; page: number; size: number }): Promise<PaginationModel<User>> {
+    async findBy({ filters, relations, page, size }: { filters: FindOptionsWhere<User> | FindOptionsWhere<User>[]; relations?: FindOptionsRelations<User>; page: number; size: number }): Promise<PaginationModel<User>> {
         const result = await paginate<User>(
             this.userRepo,
             { page, limit: size },

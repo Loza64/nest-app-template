@@ -10,10 +10,9 @@ export class JwtAuthGuard implements CanActivate {
         private readonly usersService: UsersService,
     ) { }
 
-    private readonly publicPaths = ['/api/auth/login', '/api/auth/signup'];
-    private readonly authOnlyPaths = ['/api/auth/profile'];
+    private readonly publicPaths = ['api/auth/login', '/api/auth/signup'];
+    private readonly authOnlyPaths = ['api/auth/profile'];
 
-    // Normaliza la ruta: agrega '/' inicial, reemplaza params y quita '/' final
     private normalizePath(path: string): string {
         if (!path) return '';
         let normalized = path.replace(/:([^/]+)/g, ':param');
@@ -27,10 +26,8 @@ export class JwtAuthGuard implements CanActivate {
         const path = this.normalizePath(request.route?.path);
         const method = request.method.toUpperCase();
 
-        const normalizedPublicPaths = this.publicPaths.map(p => this.normalizePath(p));
-        const normalizedAuthOnlyPaths = this.authOnlyPaths.map(p => this.normalizePath(p));
 
-        if (normalizedPublicPaths.includes(path)) return true;
+        if (this.publicPaths.includes(path)) return true;
 
         const authHeader = request.headers['authorization'];
         if (!authHeader || !authHeader.startsWith('Bearer ')) throw new UnauthorizedException('Token missing');
@@ -52,7 +49,7 @@ export class JwtAuthGuard implements CanActivate {
 
         request.user = user;
 
-        if (normalizedAuthOnlyPaths.includes(path)) return true;
+        if (this.authOnlyPaths.includes(path)) return true;
 
         const allowed = user.role?.permissions?.some(
             p => this.normalizePath(p.path) === path && p.method.toUpperCase() === method

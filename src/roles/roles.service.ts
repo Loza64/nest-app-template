@@ -62,13 +62,13 @@ export class RolesService {
         await this.roleRepo.remove(role);
     }
 
-    async findOneBy({ filters, relations }: { filters: FindOptionsWhere<Role>; relations?: FindOptionsRelations<Role> }): Promise<Role> {
+    async findOneBy({ filters, relations }: { filters: FindOptionsWhere<Role> | FindOptionsWhere<Role>[]; relations?: FindOptionsRelations<Role> }): Promise<Role> {
         const role = await this.roleRepo.findOne({ where: filters, relations });
         if (!role) throw new NotFoundException('Role not found');
         return role;
     }
 
-    async findBy({ filters, relations, page, size }: { filters: FindOptionsWhere<Role>; relations?: FindOptionsRelations<Role>; page: number; size: number }): Promise<PaginationModel<Role>> {
+    async findBy({ filters, relations, page, size }: { filters: FindOptionsWhere<Role> | FindOptionsWhere<Role>[]; relations?: FindOptionsRelations<Role>; page: number; size: number }): Promise<PaginationModel<Role>> {
         const result = await paginate<Role>(
             this.roleRepo,
             { page, limit: size },
