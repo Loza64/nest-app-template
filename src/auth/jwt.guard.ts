@@ -1,7 +1,18 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+    Injectable,
+    CanActivate,
+    ExecutionContext,
+    UnauthorizedException,
+    ForbiddenException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { RequestResponse } from './dto/request.response';
+
+interface PathRule {
+    path: string;
+    methods?: string[];
+}
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -10,29 +21,29 @@ export class JwtAuthGuard implements CanActivate {
         private readonly usersService: UsersService,
     ) { }
 
-    private readonly publicPaths = ['api/auth/login', '/api/auth/signup'];
-    private readonly authOnlyPaths = ['api/auth/profile'];
+    private readonly publicPaths: PathRule[] = [
+        { path: '/api/auth/login', methods: ['POST'] },
+        { path: '/api/auth/signup', methods: ['POST'] },
+    ];
 
-    private normalizePath(path: string): string {
-        if (!path) return '';
-        let normalized = path.replace(/:([^/]+)/g, ':param');
-        if (!normalized.startsWith('/')) normalized = '/' + normalized;
-        if (!normalized.endsWith(':param') && normalized.endsWith('/')) normalized = normalized.slice(0, -1);
-        return normalized;
-    }
+    private readonly authOnlyPaths: PathRule[] = [
+        { path: '/api/auth/profile', methods: ['GET', 'PUT'] },
+    ];
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<RequestResponse>();
-        const path = this.normalizePath(request.route?.path);
+        const path = request.route.path;
         const method = request.method.toUpperCase();
 
-
-        if (this.publicPaths.includes(path)) return true;
+        if (this.isPathAllowed(this.publicPaths, path, method)) return true;
 
         const authHeader = request.headers['authorization'];
-        if (!authHeader || !authHeader.startsWith('Bearer ')) throw new UnauthorizedException('Token missing');
+        if (!authHeader || !authHeader.startsWith('Bearer '))
+            throw new UnauthorizedException('Token missing');
+
         const token = authHeader.replace('Bearer ', '');
         let payload: { sub: number };
+
         try {
             payload = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
         } catch {
@@ -48,15 +59,20 @@ export class JwtAuthGuard implements CanActivate {
         if (user.blocked) throw new UnauthorizedException('User blocked');
 
         request.user = user;
+        if (this.isPathAllowed(this.authOnlyPaths, path, method)) return true;
 
-        if (this.authOnlyPaths.includes(path)) return true;
-
-        const allowed = user.role?.permissions?.some(
-            p => this.normalizePath(p.path) === path && p.method.toUpperCase() === method
+        const allowed = user.role?.permissions?.some((p) =>
+            p.path === path && p.method.toUpperCase() === method,
         );
 
         if (!allowed) throw new ForbiddenException('Permission denied');
 
         return true;
+    }
+
+    private isPathAllowed(rules: PathRule[], path: string, method: string): boolean {
+        return rules.some(
+            (rule) => rule.path === path && (!rule.methods || rule.methods.includes(method)),
+        );
     }
 }

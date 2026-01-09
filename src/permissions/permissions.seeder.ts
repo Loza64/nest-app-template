@@ -8,10 +8,11 @@ import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
 @Injectable()
 export class PermissionsSeeder implements OnApplicationBootstrap {
 
+    //
     private readonly unrequirePaths = [
-        'api/auth/login',
-        'api/auth/signup',
-        'api/auth/profile',
+        '/api/auth/login',
+        '/api/auth/signup',
+        '/api/auth/profile',
     ];
 
     private readonly methodMap: Record<number, string> = {
@@ -56,10 +57,8 @@ export class PermissionsSeeder implements OnApplicationBootstrap {
 
                     if (!routePath || methodNum === undefined) return;
 
-                    let fullPath = `${controllerPath}/${routePath}`.replace(/\/+/g, '/');
-
+                    let fullPath = `/${controllerPath}/${routePath}`.replace(/\/+/g, '/');
                     fullPath = this.normalizePath(fullPath);
-
                     const isPublic = this.unrequirePaths.some(p => fullPath.startsWith(this.normalizePath(p)));
 
                     if (isPublic || !fullPath.trim()) return;
