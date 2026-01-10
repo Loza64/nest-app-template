@@ -1,0 +1,1 @@
+{"version":3,"file":"session-response.dto.js","sourceRoot":"","sources":["../../../src/auth/dto/session-response.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,4DAAgD;AAChD,yDAAiD;AAEjD,MAAa,kBAAkB;IAE7B,KAAK,CAAS;IAId,IAAI,CAAO;CACZ;AAPD,gDAOC;AALC;IADC,IAAA,0BAAM,GAAE;;iDACK;AAId;IAFC,IAAA,0BAAM,GAAE;IACR,IAAA,wBAAI,EAAC,GAAG,EAAE,CAAC,kBAAI,CAAC;8BACX,kBAAI;gDAAC"}
