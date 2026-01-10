@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

@@ -30,4 +30,4 @@ import { UsersModule } from 'src/api/users/users.module';
   exports: [AuthService, JwtAuthGuard, JwtModule],
   controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}

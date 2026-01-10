@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, IsArray, ArrayUnique, IsInt, ValidateNested } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsArray,
+  ArrayUnique,
+  IsInt,
+  ValidateNested,
+} from 'class-validator';
 
 class PermissionIdDto {
   @IsInt()

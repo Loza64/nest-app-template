@@ -9,6 +9,8 @@ import { RolesModule } from './api/roles/roles.module';
 import { PermissionsModule } from './api/permissions/permissions.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt.guard';
+import { MediaModule } from './services/media/media.module';
+import { UploadModule } from './api/uploads/upload.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { JwtAuthGuard } from './auth/jwt.guard';
     RolesModule,
     PermissionsModule,
     AuthModule,
+    MediaModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

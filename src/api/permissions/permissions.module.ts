@@ -10,6 +10,6 @@ import { PermissionsSeeder } from './permissions.seeder';
   imports: [TypeOrmModule.forFeature([Permission]), DiscoveryModule],
   providers: [PermissionsService, PermissionsSeeder],
   controllers: [PermissionsController],
-  exports: [PermissionsService]
+  exports: [PermissionsService],
 })
-export class PermissionsModule { }
+export class PermissionsModule {}

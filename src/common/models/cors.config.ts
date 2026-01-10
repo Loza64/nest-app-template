@@ -1,7 +1,7 @@
 interface CorsCallback {
-    (err: Error | null, allow?: boolean): void;
+  (err: Error | null, allow?: boolean): void;
 }
 
 export default interface CorsOrigin {
-    (origin: string | undefined, callback: CorsCallback): void;
+  (origin: string | undefined, callback: CorsCallback): void;
 }

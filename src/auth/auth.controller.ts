@@ -9,22 +9,22 @@ import { Profile } from 'src/common/decorators/profile';
 
 @Controller('api/auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
-    @Post('login')
-    async login(@Body() dto: LoginDto): Promise<SessionResponseDto> {
-        const session = await this.authService.login(dto.username, dto.password);
-        return plainToInstance(SessionResponseDto, session);
-    }
+  @Post('login')
+  async login(@Body() dto: LoginDto): Promise<SessionResponseDto> {
+    const session = await this.authService.login(dto.username, dto.password);
+    return plainToInstance(SessionResponseDto, session);
+  }
 
-    @Post('signup')
-    async signUp(@Body() dto: SignUpDto): Promise<SessionResponseDto> {
-        const session = await this.authService.signUp(dto);
-        return plainToInstance(SessionResponseDto, session);
-    }
+  @Post('signup')
+  async signUp(@Body() dto: SignUpDto): Promise<SessionResponseDto> {
+    const session = await this.authService.signUp(dto);
+    return plainToInstance(SessionResponseDto, session);
+  }
 
-    @Get('profile')
-    profile(@Profile() profile: User): User {
-        return profile
-    }
+  @Get('profile')
+  profile(@Profile() profile: User): User {
+    return profile;
+  }
 }

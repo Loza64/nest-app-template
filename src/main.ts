@@ -6,7 +6,6 @@ import { ForbiddenException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import CorsOrigin from './common/models/cors.config';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
@@ -14,8 +13,8 @@ async function bootstrap() {
   const allowedOrigins = configService
     .get<string>('CORS_ORIGINS', '')
     .split(',')
-    .map(origin => origin.trim())
-    .filter(origin => origin.length > 0);
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
 
   const originChecker: CorsOrigin = (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -33,7 +32,6 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
   });
-
 
   app.useGlobalFilters(new HttpExceptionFilter(), new TypeOrmExceptionFilter());
 
