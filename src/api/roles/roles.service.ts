@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindOptionsRelations, FindOptionsWhere, In, Repository } from 'typeorm';
 import { Role } from 'src/entities/role.entity';
 import { Permission } from 'src/entities/permission.entity';
-import { PaginationModel } from 'src/common/models/pagination-model';
+import { PaginationModel } from 'src/common/models/pagination.model';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { ICrudService } from 'src/common/service/crud.service';
 

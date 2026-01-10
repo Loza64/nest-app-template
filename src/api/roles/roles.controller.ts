@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { Role } from 'src/entities/role.entity';
-import { PaginationModel } from 'src/common/models/pagination-model';
+import { PaginationModel } from 'src/common/models/pagination.model';
 import { FindOptionsRelations } from 'typeorm';
 import { CreateRoleDto } from './dto/role-create.dto';
 import { UpdateRoleDto } from './dto/role-update.dto';

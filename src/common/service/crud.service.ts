@@ -1,5 +1,5 @@
 import { DeepPartial, FindOptionsRelations, FindOptionsWhere, ObjectLiteral } from 'typeorm';
-import { PaginationModel } from '../models/pagination-model';
+import { PaginationModel } from '../models/pagination.model';
 
 export interface ICrudService<T extends ObjectLiteral> {
     create(dto: DeepPartial<T>): Promise<T>;

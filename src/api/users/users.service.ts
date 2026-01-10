@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindOptionsRelations, FindOptionsWhere, IsNull, Repository } from 'typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
-import { PaginationModel } from 'src/common/models/pagination-model';
+import { PaginationModel } from 'src/common/models/pagination.model';
 import { ICrudService } from 'src/common/service/crud.service';
 import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';

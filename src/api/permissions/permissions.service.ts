@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeepPartial, FindOptionsRelations, FindOptionsWhere } from 'typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
-import { PaginationModel } from 'src/common/models/pagination-model';
+import { PaginationModel } from 'src/common/models/pagination.model';
 import { Permission } from 'src/entities/permission.entity';
 
 @Injectable()
