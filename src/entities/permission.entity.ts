@@ -1,10 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, } from 'typeorm';
+import { BaseEntity } from 'src/common/entity/base';
+import { Entity, Column, Unique, } from 'typeorm';
 
 @Entity('permissions')
 @Unique(['path', 'method'])
-export class Permission {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class Permission extends BaseEntity {
 
   @Column()
   path: string;

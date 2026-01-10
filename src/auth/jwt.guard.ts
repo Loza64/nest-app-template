@@ -5,9 +5,9 @@ import {
     UnauthorizedException,
     ForbiddenException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { RequestResponse } from './dto/request.response';
+import { UsersService } from 'src/api/users/users.service';
 
 interface PathRule {
     path: string;

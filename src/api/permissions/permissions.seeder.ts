@@ -7,8 +7,6 @@ import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
 
 @Injectable()
 export class PermissionsSeeder implements OnApplicationBootstrap {
-
-    //
     private readonly unrequirePaths = [
         '/api/auth/login',
         '/api/auth/signup',
@@ -59,8 +57,8 @@ export class PermissionsSeeder implements OnApplicationBootstrap {
 
                     let fullPath = `/${controllerPath}/${routePath}`.replace(/\/+/g, '/');
                     fullPath = this.normalizePath(fullPath);
-                    const isPublic = this.unrequirePaths.some(p => fullPath.startsWith(this.normalizePath(p)));
 
+                    const isPublic = this.unrequirePaths.some(p => fullPath.startsWith(this.normalizePath(p)));
                     if (isPublic || !fullPath.trim()) return;
 
                     permissions.push({
@@ -70,6 +68,8 @@ export class PermissionsSeeder implements OnApplicationBootstrap {
                 });
         });
 
-        if (permissions.length > 0) await this.permissionsService.save(permissions);
+        for (const perm of permissions) {
+            await this.permissionsService.create(perm);
+        }
     }
 }

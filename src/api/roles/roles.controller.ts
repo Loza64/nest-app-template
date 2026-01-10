@@ -22,24 +22,14 @@ export class RolesController {
 
     @Get()
     async findBy(@Query() query: Record<string, string>): Promise<PaginationModel<Role>> {
-        const { page = '1', size = '50', populate, filters } = query;
+        const { page = '1', size = '50' } = query;
 
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(size, 10);
 
-        let relations: FindOptionsRelations<Role> | undefined = undefined;
-
-        if (populate) {
-            try {
-                relations = JSON.parse(populate) as FindOptionsRelations<Role>;
-            } catch {
-                throw new Error('Invalid populate JSON');
-            }
-        }
-
         return this.rolesService.findBy({
-            filters: filters as Partial<Role>,
-            relations,
+            filters: {},
+            relations: {},
             page: pageNumber,
             size: pageSize,
         });
@@ -77,7 +67,7 @@ export class RolesController {
     }
 
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.rolesService.delete({ id });
+    async delete(@Param('id', ParseIntPipe) id: number): Promise<Role> {
+        return this.rolesService.delete(id);
     }
 }

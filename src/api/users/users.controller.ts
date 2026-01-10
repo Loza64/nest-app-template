@@ -76,7 +76,7 @@ export class UsersController {
     }
 
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.usersService.delete({ id });
+    async delete(@Param('id', ParseIntPipe) id: number): Promise<User> {
+        return this.usersService.delete(id);
     }
 }

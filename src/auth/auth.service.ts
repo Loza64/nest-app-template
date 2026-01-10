@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/entities/user.entity';
 import { SignUpDto } from './dto/signup.dto';
 import { SessionResponseDto } from './dto/session-response.dto';
+import { UsersService } from 'src/api/users/users.service';
 
 
 
@@ -16,7 +16,7 @@ export class AuthService {
     ) { }
 
     async login(username: string, password: string): Promise<SessionResponseDto> {
-        const user = await this.usersService.findOneBy({ filters: { username }, relations: { role: { permissions: true } } });
+        const user = await this.usersService.login(username);
         if (!user) throw new UnauthorizedException('Usuario o contraseña incorrectos');
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) throw new UnauthorizedException('Usuario o contraseña incorrectos');
@@ -30,12 +30,8 @@ export class AuthService {
         return { token, data: user };
     }
 
-    async findForAuth(userId: number): Promise<User> {
-        const user = await this.usersService.findOneBy({
-            filters: { id: userId, blocked: false },
-            relations: { role: { permissions: true } },
-        });
-        if (!user) throw new UnauthorizedException('Token inválido');
+    async findForAuth(id: number): Promise<User | null> {
+        const user = await this.usersService.findAuth(id)
         return user;
     }
 }

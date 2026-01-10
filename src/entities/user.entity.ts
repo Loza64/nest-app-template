@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -9,11 +8,10 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role } from './role.entity';
+import { BaseEntity } from 'src/common/entity/base';
 
 @Entity('users')
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class User extends BaseEntity {
 
   @Column({ unique: true, nullable: false })
   username: string;
