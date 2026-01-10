@@ -8,6 +8,7 @@ import {
     Body,
     Query,
     ParseIntPipe,
+    ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from 'src/entities/user.entity';
@@ -16,10 +17,15 @@ import { UpdateUserDto } from './dto/update.dto';
 import { FindOptionsWhere } from 'typeorm';
 import { ILike } from 'typeorm';
 import { FindUsersQueryDto } from './dto/findUsersQueryDto.dto';
+import { Profile } from 'src/common/decorators/profile';
 
 @Controller('api/users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
+
+    private preventSelfAction(id: number, profile: User) {
+        if (id === profile.id) throw new ForbiddenException('Cannot perform this action on your profile');
+    }
 
     @Get()
     async findAll(@Query() query: FindUsersQueryDto) {
@@ -53,8 +59,6 @@ export class UsersController {
         });
     }
 
-
-
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
         return this.usersService.findOneBy({
@@ -71,12 +75,26 @@ export class UsersController {
     }
 
     @Put(':id')
-    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto): Promise<User> {
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto, @Profile() profile: User): Promise<User> {
+        this.preventSelfAction(id, profile);
         return this.usersService.update({ id, dto });
     }
 
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    async delete(@Param('id', ParseIntPipe) id: number, @Profile() profile: User): Promise<User> {
+        this.preventSelfAction(id, profile);
         return this.usersService.delete(id);
+    }
+
+    @Delete(':id/soft')
+    async softDelete(@Param('id', ParseIntPipe) id: number, @Profile() profile: User): Promise<User> {
+        this.preventSelfAction(id, profile);
+        return this.usersService.softDelete(id);
+    }
+
+    @Put(':id/restore')
+    async restore(@Param('id', ParseIntPipe) id: number, @Profile() profile: User): Promise<User> {
+        this.preventSelfAction(id, profile);
+        return this.usersService.restore(id);
     }
 }

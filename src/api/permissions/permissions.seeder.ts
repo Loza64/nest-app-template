@@ -1,19 +1,26 @@
-import { Injectable, OnApplicationBootstrap, RequestMethod } from '@nestjs/common';
+import {
+    Injectable,
+    OnApplicationBootstrap,
+    RequestMethod,
+} from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { PermissionsService } from './permissions.service';
-import { DeepPartial } from 'typeorm';
-import { Permission } from 'src/entities/permission.entity';
 import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
+import { DeepPartial } from 'typeorm';
+
+import { PermissionsService } from './permissions.service';
+import { Permission } from 'src/entities/permission.entity';
+import PathRule from 'src/common/models/path.rule';
 
 @Injectable()
 export class PermissionsSeeder implements OnApplicationBootstrap {
-    private readonly unrequirePaths = [
-        '/api/auth/login',
-        '/api/auth/signup',
-        '/api/auth/profile',
+
+    private readonly unRequiredPaths: PathRule[] = [
+        { path: '/api/auth/login', methods: ['POST'] },
+        { path: '/api/auth/signup', methods: ['POST'] },
+        { path: '/api/auth/profile', methods: ['GET', 'PUT'] },
     ];
 
-    private readonly methodMap: Record<number, string> = {
+    private readonly methodMap: Readonly<Partial<Record<RequestMethod, string>>> = {
         [RequestMethod.GET]: 'GET',
         [RequestMethod.POST]: 'POST',
         [RequestMethod.PUT]: 'PUT',
@@ -30,46 +37,51 @@ export class PermissionsSeeder implements OnApplicationBootstrap {
         private readonly permissionsService: PermissionsService,
     ) { }
 
-    private normalizePath(path: string) {
-        return path.replace(/\/+$/, '');
+    private normalizePath(path = ''): string {
+        return `/${path}`.replace(/\/+/g, '/').replace(/\/$/, '');
     }
 
-    async onApplicationBootstrap() {
-        const controllers = this.discoveryService.getControllers();
-        const permissions: DeepPartial<Permission>[] = [];
+    private notRequired(path: string, method: string): boolean {
+        return this.unRequiredPaths.some(rule => {
+            const rulePath = rule.path
+            return (path === rulePath && rule.methods?.includes(method));
+        });
+    }
 
-        controllers.forEach(wrapper => {
+    async onApplicationBootstrap(): Promise<void> {
+        const controllers = this.discoveryService.getControllers();
+        const permissionsMap = new Map<string, DeepPartial<Permission>>();
+
+        for (const wrapper of controllers) {
             const { instance } = wrapper;
-            if (!instance) return;
+            if (!instance) continue;
 
             const prototype = Object.getPrototypeOf(instance);
-            const controllerPath = this.reflector.get<string>(PATH_METADATA, instance.constructor) || '';
+            const controllerPath = this.normalizePath(this.reflector.get<string>(PATH_METADATA, instance.constructor));
 
-            Object.getOwnPropertyNames(prototype)
-                .filter(m => typeof instance[m] === 'function' && m !== 'constructor')
-                .forEach(methodName => {
-                    const handler = prototype[methodName];
+            for (const methodName of Object.getOwnPropertyNames(prototype)) {
+                if (methodName === 'constructor') continue;
 
-                    const routePath = this.reflector.get<string>(PATH_METADATA, handler);
-                    const methodNum = this.reflector.get<number>(METHOD_METADATA, handler);
+                const handler = prototype[methodName];
+                if (typeof handler !== 'function') continue;
 
-                    if (!routePath || methodNum === undefined) return;
+                const routePath = this.reflector.get<string>(PATH_METADATA, handler);
+                const methodNum = this.reflector.get<RequestMethod>(METHOD_METADATA, handler);
 
-                    let fullPath = `/${controllerPath}/${routePath}`.replace(/\/+/g, '/');
-                    fullPath = this.normalizePath(fullPath);
+                if (!routePath || methodNum === undefined) continue;
 
-                    const isPublic = this.unrequirePaths.some(p => fullPath.startsWith(this.normalizePath(p)));
-                    if (isPublic || !fullPath.trim()) return;
+                const method = this.methodMap[methodNum];
+                const fullPath = this.normalizePath(`${controllerPath}/${routePath}`);
 
-                    permissions.push({
-                        path: fullPath,
-                        method: this.methodMap[methodNum],
-                    });
-                });
-        });
+                if (!method || !fullPath) continue;
+                if (this.notRequired(fullPath, method)) continue;
 
-        for (const perm of permissions) {
-            await this.permissionsService.create(perm);
+                const key = `${method}:${fullPath}`;
+                permissionsMap.set(key, { path: fullPath, method });
+            }
         }
+
+        await Promise.all([...permissionsMap.values()].map(permission => this.permissionsService.create(permission)),
+        );
     }
 }

@@ -19,7 +19,7 @@ import { UsersModule } from 'src/api/users/users.module';
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: '6h',
+          expiresIn: '1d',
           issuer: 'app-name',
           audience: ['web', 'mobile'],
         },

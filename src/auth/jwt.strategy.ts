@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from 'src/api/users/users.service';
@@ -20,14 +20,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: JwtPayload): Promise<User> {
-        const user = await this.usersService.findOneBy({
-            filters: { id: payload.sub, blocked: false },
-            relations: { role: true },
-        });
+    async validate({ sub }: JwtPayload): Promise<User> {
+        const user = await this.usersService.findAuth(sub);
 
         if (!user) {
-            throw new Error('Token inválido: usuario no encontrado');
+            throw new UnauthorizedException('Token inválido: usuario no encontrado');
         }
 
         return user;

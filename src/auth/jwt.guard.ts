@@ -8,11 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { RequestResponse } from './dto/request.response';
 import { UsersService } from 'src/api/users/users.service';
-
-interface PathRule {
-    path: string;
-    methods?: string[];
-}
+import PathRule from 'src/common/models/path.rule';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -59,6 +55,7 @@ export class JwtAuthGuard implements CanActivate {
         if (user.blocked) throw new UnauthorizedException('User blocked');
 
         request.user = user;
+
         if (this.isPathAllowed(this.authOnlyPaths, path, method)) return true;
 
         const allowed = user.role?.permissions?.some((p) =>
@@ -71,8 +68,6 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     private isPathAllowed(rules: PathRule[], path: string, method: string): boolean {
-        return rules.some(
-            (rule) => rule.path === path && (!rule.methods || rule.methods.includes(method)),
-        );
+        return rules.some((rule) => rule.path === path && rule.methods.includes(method));
     }
 }
