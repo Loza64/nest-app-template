@@ -27,6 +27,7 @@ import { UploadModule } from './api/uploads/upload.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
         synchronize: true,
+        ssl: { rejectUnauthorized: false },
       }),
     }),
     UsersModule,
